@@ -1,16 +1,8 @@
-import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_drawing_board/flutter_drawing_board.dart';
-import 'package:flutter_drawing_board/paint_contents.dart';
 import 'package:lemolite_drawing/pages/drawing_page/cubit/color_cubit.dart';
-import 'package:lemolite_drawing/service/device_info_service.dart';
 import 'package:lemolite_drawing/service/firebase_cloud_service.dart';
 import 'package:lemolite_drawing/utils/custom_snackbar.dart';
 
@@ -27,22 +19,6 @@ class _DrawingPageState extends State<DrawingPage> {
   @override
   void initState() {
     super.initState();
-    FirebaseService.instance.getDrawingStream();
-  }
-
-  Future<void> getDeviceID() async {
-    final id = await DeviceIDService().getDeviceID();
-    log(id);
-  }
-
-  void addTestLine() async {
-    final list = drawingController.getJsonList();
-    if (list.isNotEmpty) {
-      await FirebaseService.instance.addDrawing(list: list);
-    } else {
-      CustomSnackBar.show(
-          message: "Please draw something...", color: Colors.red);
-    }
   }
 
   @override
@@ -60,16 +36,15 @@ class _DrawingPageState extends State<DrawingPage> {
             },
             icon: Icon(Icons.color_lens_outlined),
           ),
+          IconButton(
+            onPressed: () async {
+              processRemoteSaving();
+            },
+            icon: Icon(Icons.save_outlined),
+          ),
         ],
       ),
       body: buildInternalBodyWidget(size),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          addTestLine();
-        },
-        child: Icon(Icons.save_outlined),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
     );
   }
 
@@ -91,6 +66,16 @@ class _DrawingPageState extends State<DrawingPage> {
         },
       ),
     );
+  }
+
+  Future<void> processRemoteSaving() async {
+    final list = drawingController.getJsonList();
+    if (list.isNotEmpty) {
+      await FirebaseService.instance.addDrawing(list: list);
+    } else {
+      CustomSnackBar.show(
+          message: "Please draw something...", color: Colors.red);
+    }
   }
 
   Future<void> showColorPicker() async {

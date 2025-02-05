@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lemolite_drawing/pages/drawing_detail/drawing_detail_page.dart';
 import 'package:lemolite_drawing/pages/drawing_page/drawing_page.dart';
+import 'package:lemolite_drawing/service/device_info_service.dart';
 import 'package:lemolite_drawing/service/firebase_cloud_service.dart';
 
 class DrawingListingPage extends StatelessWidget {
@@ -12,7 +13,20 @@ class DrawingListingPage extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("List of Drawing Remote Users"),
+        title: FutureBuilder(
+          future: DeviceIDService().getDeviceID(),
+          builder: (_, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return SizedBox();
+            } else {
+              return Text(
+                maxLines: 2,
+                "Your remote id: ${snapshot.data}",
+                style: TextStyle(fontSize: 20),
+              );
+            }
+          },
+        ),
         forceMaterialTransparency: true,
         backgroundColor: Colors.white,
       ),
